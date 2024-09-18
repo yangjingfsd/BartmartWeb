@@ -12,8 +12,8 @@
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string ProfilePicture { get; set; }
-        public List<string> Listings { get; set; }
+        public List<ListingModel> Listings { get; set; }
         public List<string> Conversations { get; set; }
-        public List<string> Wishlist { get; set; }
+        public string MyWishlist { get; set; }
     }
 }
