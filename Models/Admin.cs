@@ -1,6 +1,6 @@
 ﻿namespace BartmartWeb.Models
 {
-    public class AdminModel
+    public class Admin
     {
         public string AdminID { get; set; }
         public string FirstName { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace BartmartWeb.Models
 {
-    public class ListingModel
+    public class Listing
     {
         public string ListingID { get; set; }
         public string Title { get; set; }
