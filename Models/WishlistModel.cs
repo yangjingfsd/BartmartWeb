@@ -4,6 +4,6 @@
     {
         public string WishlistID { get; set; }
         public string UserID { get; set; }
-        public List<ListingModel> Listings { get; set; }
+        public List<Listing> Listings { get; set; }
     }
 }
