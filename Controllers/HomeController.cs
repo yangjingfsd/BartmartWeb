@@ -18,6 +18,16 @@ namespace BartmartWeb.Controllers
             return View();
         }
 
+        public IActionResult Signup()
+        {
+            return View("~/Views/Auth/Signup.cshtml");
+        }
+  public IActionResult Login()
+        {
+            return View("~/Views/Auth/Login.cshtml");
+        }
+
+
         public IActionResult Privacy()
         {
             return View();
