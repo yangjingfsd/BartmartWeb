@@ -2,7 +2,7 @@
 {
     public class ListingModel
     {
-        public string ListinID { get; set; }
+        public string ListingID { get; set; }
         public string Title { get; set; }
         public string UserID { get; set; }
         public string Description { get; set; }
