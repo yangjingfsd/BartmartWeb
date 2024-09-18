@@ -6,6 +6,6 @@
         public string UserID { get; set; }
         public string ListingID { get; set; }
         public string OtherUserID { get; set; }
-        public List<string> Messages { get; set; }
+        public List<MessageModel> Messages { get; set; }
     }
 }
