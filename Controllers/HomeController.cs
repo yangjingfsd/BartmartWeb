@@ -22,12 +22,15 @@ namespace BartmartWeb.Controllers
         {
             return View("~/Views/Auth/Signup.cshtml");
         }
-  public IActionResult Login()
+        public IActionResult Login()
         {
             return View("~/Views/Auth/Login.cshtml");
         }
 
-
+        public IActionResult NewListing()
+        {
+            return View("~/Views/Pages/NewListing.cshtml");
+        }
         public IActionResult Privacy()
         {
             return View();
