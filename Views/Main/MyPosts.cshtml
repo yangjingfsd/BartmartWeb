@@ -1,0 +1,106 @@
+@model Post
+
+@{
+    ViewData["Title"] = "Main Page";
+}
+
+@* Author: Jing Yang
+Date: Sept 6, 2024
+ *@
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js';
+
+        import { firebaseConfig } from "~/Views/Shared/config.js";
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+
+
+        function loadPosts() {
+
+        onAuthStateChanged(auth, (user) => {
+        if (user) {
+
+            const postsRef = dbRef(database, `Posts/${user.uid}`);
+            onValue(postsRef, (snapshot) => {
+                const posts = snapshot.val();
+                const table = document.getElementById('postTable');
+                table.innerHTML = '';
+
+                if (posts) {
+                    Object.keys(posts).forEach(id => {
+                        const post = posts[id];
+                        const row = table.insertRow();
+                        const date = new Date(post.createdAt);
+                        row.insertCell(0).innerHTML = `<h3>${post.title}</h3><p><img src="${user.photoURL}" alt="" style="width: 35px; height: 35px" class="rounded-circle" />&nbsp;&nbsp;${post.userId}&nbsp;&nbsp;${date.toLocaleString()}</p><p>${post.content}</p><p><img src="${post.imgURL}" height="150"></p>`
+                        +`<p><button onclick="deletePost('${id}');" data-mdb-button-init data-mdb-ripple-init class="btn btn-danger">Delete</button></p>`
+                        +`<form action="EditPost" method="post">`
+                        +`<input name="postId" type="hidden" value="${id}"/>`
+                        +`<input name="userId" type="hidden" value="${post.userId}"/>`
+                        +`<input name="title" type="hidden" value="${post.title}"/>`
+                        +`<input name="content" type="hidden" value="${post.content}"/>`
+                        +`<input name="imgURL" type="hidden" value="${post.imgURL}"/>`
+                        +`<input name="createdAt" type="hidden" value="${post.createdAt}"/>`
+                        +`<button type="submit" class="btn btn-primary">Edit</button>`
+                        +`</form>`;
+                    });
+                }
+            });
+
+          } else {
+        console.log("User logged out!");
+          }
+        });
+
+
+        }
+
+        async function deletePostfun(uid,postId) {
+            try {
+                const postRef = dbRef(database, `Posts/${uid}/` + postId);
+
+                const userConfirmed = confirm("Confirm to delete?");
+                if (userConfirmed) {
+                    await remove(postRef);
+                    alert('Post deleted!');
+                } else {
+                    alert("Cancelled.");
+                }
+
+            } catch (error) {
+                console.error('Error message: ', error);
+            }
+        }
+
+        window.deletePost = function (id) {
+
+            onAuthStateChanged(auth, (user) => {
+            if (user) {
+
+                deletePostfun(user.uid,id);
+
+            } else {
+            console.log("User logged out!");
+            }
+            });
+
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPosts();
+        });
+
+
+</script>
+
+<table class="table" id="postTable">
+        <tr>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+        </tr>
+
+</table>
