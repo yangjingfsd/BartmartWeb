@@ -4,199 +4,299 @@
 
 @* Author: Jing Yang
 Date: Sept 6, 2024
- *@
- 
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
-    import { getDatabase, ref as dbRef, set, push, onValue, update, remove, query, orderByChild } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js';
+*@
 
-  import { firebaseConfig } from "~/Views/Shared/config.js";
+@* <script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+import { getDatabase, ref as dbRef, set, push, onValue, update, remove, query, orderByChild } from
+'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js';
 
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const auth = getAuth(app);
-    
-    const table = document.getElementById('postTable');
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const auth = getAuth(app);
 
-    const postRootRef = dbRef(database, 'Posts/');
+const table = document.getElementById('postTable');
 
-    function loadPosts() {
-        onValue(postRootRef, (snapshot) => {
+const postRootRef = dbRef(database, 'Posts/');
 
-            const directorys = snapshot.val();
+function loadPosts() {
+onValue(postRootRef, (snapshot) => {
 
-            if(directorys){
-            
-                Object.keys(directorys).forEach(directory => {
+const directorys = snapshot.val();
 
-                    const postsRef = query(dbRef(database, `Posts/${directory}`), orderByChild('createdAt'));
+if(directorys){
 
-                    onValue(postsRef, (postsnapshot) => {
+Object.keys(directorys).forEach(directory => {
 
-                        const orgposts = postsnapshot.val();
-                        
-                        const posts = Object.fromEntries(Object.entries(orgposts).reverse());
+const postsRef = query(dbRef(database, `Posts/${directory}`), orderByChild('createdAt'));
 
-                        if (posts) {
+onValue(postsRef, (postsnapshot) => {
 
-                            Object.keys(posts).forEach(id => {
+const orgposts = postsnapshot.val();
 
-                            onAuthStateChanged(auth, (user) => {
-                                if (user) {
+const posts = Object.fromEntries(Object.entries(orgposts).reverse());
 
-                                    const post = posts[id];
+if (posts) {
 
-                                    const row = table.insertRow();
-                                                                        
-                                    const date = new Date(post.createdAt);
+Object.keys(posts).forEach(id => {
 
-                                    var cell = `<h3>${post.title}</h3><p><img src="${post.photoURL}" alt="" style="width: 35px; height: 35px" class="rounded-circle"/>&nbsp;${post.userId}&nbsp;&nbsp;`
-                                               + `${date.toLocaleString()}&nbsp;&nbsp;`;
+onAuthStateChanged(auth, (user) => {
+if (user) {
 
-                                    if(directory !== user.uid) { 
-                                        cell = cell + `<button type="button" class="btn btn-outline-warning btn-rounded" data-mdb-ripple-init  data-mdb-ripple-color="dark" onclick="makeFollow('Followers/${directory}','${user.uid}','${user.photoURL}','${user.displayName}');">Follow</button></p>`;
-                                    } 
-                                    
-                                    cell = cell + `<p>${post.content}</p><p><img src="${post.imgURL}" height="150"></p>`;
+const post = posts[id];
 
-                                    const likesRef = dbRef(database, `Posts/${directory}/${id}/likes`)
+const row = table.insertRow();
 
-                                    onValue(likesRef,(likeSnapshot)=>{
-                                        const likes = likeSnapshot.val();
-                                        const count = likes? Object.keys(likes).length : 0;
-                                        cell = cell + `<p><button onclick="makeLike('Posts/${directory}/${id}/likes','${user.uid}');" style="font-size:150%;color:red;">&hearts;</button>&nbsp;&nbsp;&nbsp;${count}</p>`;
-                                    });
+const date = new Date(post.createdAt);
 
-@*                                     const unlikesRef = dbRef(database, `Posts/${directory}/${id}/unlikes`)
+var cell = `<h3>${post.title}</h3><p><img src="${post.photoURL}" alt="" style="width: 35px; height: 35px"
+class="rounded-circle"/>&nbsp;${post.userId}&nbsp;&nbsp;`
++ `${date.toLocaleString()}&nbsp;&nbsp;`;
 
-                                    onValue(unlikesRef,(unlikeSnapshot)=>{
-                                        const unlikes = unlikeSnapshot.val();
-                                        const uncount = unlikes? Object.keys(unlikes).length : 0;
-                                        cell = cell + `<button onclick="makeunLike('Posts/${directory}/${id}/unlikes','${user.uid}');" style="font-size:150%;color:red;">&#128078;</button>&nbsp;&nbsp;&nbsp;${uncount}</p>`;
-                                    });
- *@
-                                    cell = cell + `<p class="d-flex justify-content-center">`                                      
-                                    +`<div class="input-group w-auto">`                                      
-                                    +`<label for="button-addon1"><img src="${user.photoURL}" alt="" style="width: 35px; height: 35px" class="rounded-circle"/>&nbsp;</label><input type="text" class="form-control" id="${id}" placeholder="Make a comment" aria-label="Make a comment" aria-describedby="button-addon1"/>`                                      
-                                    +`<button data-mdb-button-init data-mdb-ripple-init class="btn btn-primary" type="button" id="button-addon1" data-mdb-ripple-color="dark" onclick="makeComment('Posts/${directory}/${id}/comments', '${id}', '${user.uid}','${user.photoURL}');">Post</button>`                                      
-                                    +`</div>`
-                                    +`</p>`;                                      
+if(directory !== user.uid) {
+cell = cell + `<button type="button" class="btn btn-outline-warning btn-rounded" data-mdb-ripple-init
+data-mdb-ripple-color="dark"
+onclick="makeFollow('Followers/${directory}','${user.uid}','${user.photoURL}','${user.displayName}');">Follow</button></p>`;
+}
 
+cell = cell + `<p>${post.content}</p><p><img src="${post.imgURL}" height="150"></p>`;
 
+const likesRef = dbRef(database, `Posts/${directory}/${id}/likes`)
 
-                                    const commentsRef = dbRef(database, `Posts/${directory}/${id}/comments`)
+onValue(likesRef,(likeSnapshot)=>{
+const likes = likeSnapshot.val();
+const count = likes? Object.keys(likes).length : 0;
+cell = cell + `<p><button onclick="makeLike('Posts/${directory}/${id}/likes','${user.uid}');"
+style="font-size:150%;color:red;">&hearts;</button>&nbsp;&nbsp;&nbsp;${count}</p>`;
+});
+const unlikesRef = dbRef(database, `Posts/${directory}/${id}/unlikes`)
 
-                                    onValue(commentsRef,(comSnapshot)=>{
-                                        const comments = comSnapshot.val();
-                                        if(comments){
-                                            Object.keys(comments).forEach(comid => {
-                                                const comment = comments[comid];
-                                                cell =  cell + `<p><img src="${comment.photoURL}" alt="" style="width: 20px; height: 20px" class="rounded-circle"/>&nbsp;${comment.content}<p>`;                                      
-                                            });
-                                        }else{
-                                            console.log("No comments yet!");
-                                        }
-                                    });
+onValue(unlikesRef,(unlikeSnapshot)=>{
+const unlikes = unlikeSnapshot.val();
+const uncount = unlikes? Object.keys(unlikes).length : 0;
+cell = cell + `<button onclick="makeunLike('Posts/${directory}/${id}/unlikes','${user.uid}');"
+style="font-size:150%;color:red;">&#128078;</button>&nbsp;&nbsp;&nbsp;${uncount}</p>`;
+});
 
-                                    row.insertCell(0).innerHTML =  cell;
-
-                                } else {
-                                console.log("User logged out!");
-                                }
-                            });
-
-                            });
+cell = cell + `<p class="d-flex justify-content-center">`
++`<div class="input-group w-auto">`
++`<label for="button-addon1"><img src="${user.photoURL}" alt="" style="width: 35px; height: 35px"
+class="rounded-circle"/>&nbsp;</label><input type="text" class="form-control" id="${id}" placeholder="Make a comment"
+aria-label="Make a comment" aria-describedby="button-addon1"/>`
++`<button data-mdb-button-init data-mdb-ripple-init class="btn btn-primary" type="button" id="button-addon1"
+data-mdb-ripple-color="dark" onclick="makeComment('Posts/${directory}/${id}/comments', '${id}',
+'${user.uid}','${user.photoURL}');">Post</button>`
++`</div>`
++`</p>`;
 
 
-                        } else {
-                            console.log("No post in this directory");
-                        }
-                    });
 
-                });
+const commentsRef = dbRef(database, `Posts/${directory}/${id}/comments`)
+
+onValue(commentsRef,(comSnapshot)=>{
+const comments = comSnapshot.val();
+if(comments){
+Object.keys(comments).forEach(comid => {
+const comment = comments[comid];
+cell = cell + `<p><img src="${comment.photoURL}" alt="" style="width: 20px; height: 20px"
+class="rounded-circle"/>&nbsp;${comment.content}<p>`;
+});
+}else{
+console.log("No comments yet!");
+}
+});
+
+row.insertCell(0).innerHTML = cell;
+
+} else {
+console.log("User logged out!");
+}
+});
+
+});
 
 
-            } else {
+} else {
+console.log("No post in this directory");
+}
+});
 
-                alert("No posts yet!");
-            }
-        });
-    }
+});
 
-    window.makeComment = function (commentDir, id, uid, photoURL) {
-        const content = document.getElementById(id).value;
-        const fcommentsRef = dbRef(database, commentDir);
-        addComment(fcommentsRef, content, uid, photoURL);
-        document.getElementById(id).value = '';
-        window.location.href="/Main/homepage";
-    };
 
-    async function addComment(commentsRef, content, uid, photoURL) {
-        try {
-            const newCommentRef = push(commentsRef);
-            await set(newCommentRef, {uid, content, photoURL});
-            console.log('Comment posted!');
-        } catch (error) {
-            console.error('Error message: ', error);
-        }
-    }
+} else {
 
-    window.makeFollow = function (followDir, uid, photoURL, displayName) {
-        const followsRef = dbRef(database, followDir);
-        addFollow(followsRef, uid, photoURL, displayName);
-        alert("Followed!");
-    };
+alert("No posts yet!");
+}
+});
+}
 
-    async function addFollow(followsRef, uid, photoURL, displayName) {
-        try {
-            const newFollowRef = push(followsRef);
-            await set(newFollowRef, {uid, photoURL, displayName});
-            console.log('Follower added!');
-        } catch (error) {
-            console.error('Error message: ', error);
-        }
-    }
+window.makeComment = function (commentDir, id, uid, photoURL) {
+const content = document.getElementById(id).value;
+const fcommentsRef = dbRef(database, commentDir);
+addComment(fcommentsRef, content, uid, photoURL);
+document.getElementById(id).value = '';
+window.location.href="/Main/homepage";
+};
 
-    window.makeLike = function (likeDir, uid) {
-        const likesRef = dbRef(database, likeDir);
-        addLike(likesRef,uid);
-        window.location.href="/Main/homepage";
-    }
+async function addComment(commentsRef, content, uid, photoURL) {
+try {
+const newCommentRef = push(commentsRef);
+await set(newCommentRef, {uid, content, photoURL});
+console.log('Comment posted!');
+} catch (error) {
+console.error('Error message: ', error);
+}
+}
 
-    async function addLike(likesRef, uid) {
-        try {
-            const newLikeRef = push(likesRef);
-            await set(newLikeRef, {uid});
-            console.log('Like counted!');
-        } catch (error) {
-            console.error(error.message);
-        }
-    }
+window.makeFollow = function (followDir, uid, photoURL, displayName) {
+const followsRef = dbRef(database, followDir);
+addFollow(followsRef, uid, photoURL, displayName);
+alert("Followed!");
+};
 
-    window.makeunLike = function (unlikeDir, uid) {
-        const unlikesRef = dbRef(database, unlikeDir);
-        addunLike(unlikesRef,uid);
-        window.location.href="/Main/homepage";
-    }
+async function addFollow(followsRef, uid, photoURL, displayName) {
+try {
+const newFollowRef = push(followsRef);
+await set(newFollowRef, {uid, photoURL, displayName});
+console.log('Follower added!');
+} catch (error) {
+console.error('Error message: ', error);
+}
+}
 
-    async function addunLike(unlikesRef, uid) {
-        try {
-            const newunLikeRef = push(unlikesRef);
-            await set(newunLikeRef, {uid});
-            console.log('Unlike counted!');
-        } catch (error) {
-            console.error(error.message);
-        }
-    }
+window.makeLike = function (likeDir, uid) {
+const likesRef = dbRef(database, likeDir);
+addLike(likesRef,uid);
+window.location.href="/Main/homepage";
+}
 
-    document.addEventListener('DOMContentLoaded', () => {
-        table.innerHTML = '';
-        loadPosts();
-    });
+async function addLike(likesRef, uid) {
+try {
+const newLikeRef = push(likesRef);
+await set(newLikeRef, {uid});
+console.log('Like counted!');
+} catch (error) {
+console.error(error.message);
+}
+}
+
+window.makeunLike = function (unlikeDir, uid) {
+const unlikesRef = dbRef(database, unlikeDir);
+addunLike(unlikesRef,uid);
+window.location.href="/Main/homepage";
+}
+
+async function addunLike(unlikesRef, uid) {
+try {
+const newunLikeRef = push(unlikesRef);
+await set(newunLikeRef, {uid});
+console.log('Unlike counted!');
+} catch (error) {
+console.error(error.message);
+}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+table.innerHTML = '';
+loadPosts();
+});
 
 </script>
+*@
+<div class="row align-self-center">
+    <div class="col align-self-center">
+        <h2> Welcome to BartMart, where every trade finds its value</h2>
+        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
+            industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and
+            scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into
+            electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of
+            Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like
+            Aldus PageMaker including versions of Lorem Ipsum.</p>
+        <p><button type="button" class="btn btn-outline-warning btn-rounded" data-mdb-ripple-init
+                data-mdb-ripple-color="dark">REGISTER</button>&nbsp;&nbsp;<button type="button"
+                class="btn btn-outline-success btn-rounded" data-mdb-ripple-init
+                data-mdb-ripple-color="dark">LOGIN</button></p>
+    </div>
+    <div class="col align-self-center">
+        <img src="#" height="300" width="500">
+    </div>
+</div>
+    <div class="container my-5">
+        <div class="row text-center">
 
-<table class="table" id="postTable">
+            <div class="col-sm-4">
+                <h3>Buy and Sell</h3>
+                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
+            industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and
+            scrambled it to make a type specimen book.</p>
+            </div>
 
-</table>
+            <div class="col-sm-4">
+                <h3>Use your Location</h3>
+                <p>T It has survived not only five centuries, but also the leap into
+            electronic typesetting, remaining essentially unchanged.</p>
+            </div>
+            <div class="col-sm-4">
+                <h3>Use Cryptocurrency</h3>
+                <p>It was popularised in the 1960s with the release of
+            Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like
+            Aldus PageMaker including versions of Lorem Ipsum.</p>
+            </div>
+
+        </div>
+    </div>
+<hr>
+    <div class="container my-5">
+        <div class="row text-center">
+
+            <div class="col-sm-4">
+                <h3>Great Trades</h3>
+                <img src="#" width="200" height="200">
+            </div>
+
+            <div class="col-sm-4">
+                <h3>Near me</h3>
+                <img src="#" width="200" height="200">
+            </div>
+            <div class="col-sm-4">
+                <h3>Categories</h3>
+                <img src="#" width="200" height="200">
+            </div>
+
+        </div>
+    </div>
+
+<hr>
+<div class="container">
+  <div class="row">
+    <div class="col"><img src="#" height="150" width="150"><p>Product Name</p><p>Description, color, size</p><p>$95 &nbsp;<s>$119</s>&nbsp; -20%</p></div>
+    <div class="col"><img src="#" height="150" width="150"><p>Product Name</p><p>Description, color, size</p><p>$95 &nbsp;&nbsp;</p></div>
+    <div class="col"><img src="#" height="150" width="150"><p>Product Name</p><p>Description, color, size</p><p>$95 &nbsp;&nbsp;</p></div>
+    <div class="col"><img src="#" height="150" width="150"><p>Product Name</p><p>Description, color, size</p><p>$95 &nbsp;&nbsp;</p></div>
+    <div class="col"><img src="#" height="150" width="150"><p>Product Name</p><p>Description, color, size</p><p>$95 &nbsp;&nbsp;</p></div>
+  </div>
+</div>
+<div>
+    <img src="#" width="100%" height="300">
+</div>
+<hr>
+<div style="text-align: center;">
+   <div style="width: 50%;margin:auto;">
+    <h2>Get In Touch</h2>
+    <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
+            industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and
+            scrambled it to make a type specimen book. </p>
+    <p><button type="button" class="btn btn-primary">Contact Us</button></p>
+    </div>
+</div>
+<hr>
+<div class="container">
+  <div class="row">
+    <div class="col"><h4>Our Rating</h4><p>&#9733; &#9733; &#9733;  &#9733; &#9734;</p><p>Based on 2303 reviews</p></div>
+    <div class="col"><p>&#9733; &#9733; &#9733;  &#9733; &#9733;</p><p>Geat value and quality</p><p>standard dummy text ever since the 1500s, when an unknown printer</p></div>
+    <div class="col"><p>&#9733; &#9733; &#9733;  &#9733; &#9734;</p><p>Beautiful design!</p><p>standard dummy text ever since the 1500s, when an unknown printer</p></div>
+    <div class="col"><p>&#9733; &#9733; &#9733;  &#9733; &#9734;</p><p>Exactly what I wanted</p><p>standard dummy text ever since the 1500s, when an unknown printer</p></div>
+  </div>
+</div>
