@@ -13,7 +13,7 @@
         public string PhoneNumber { get; set; }
         public string ProfilePicture { get; set; }
         public List<Listing> Listings { get; set; }
-        public List<string> Conversations { get; set; }
-        public List<string> Wishlist { get; set; }
+        public List<ConversationModel> Conversations { get; set; }
+        public WishlistModel Wishlist { get; set; }
     }
 }
